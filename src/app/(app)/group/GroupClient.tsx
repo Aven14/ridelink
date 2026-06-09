@@ -3,13 +3,16 @@
 import { useRide } from "@/providers/RideProvider";
 import { useState } from "react";
 import { CreateGroupModal, JoinGroupModal } from "@/components/groups/GroupModals";
-import { QuickActionBar } from "@/components/ride/QuickActionBar";
-import { VoiceChatPanel } from "@/components/ride/VoiceChatPanel";
+import QuickActionBar from "@/components/ride/QuickActionBar";
+import VoiceChatPanel from "@/components/ride/VoiceChatPanel";
+import { useQuickActions } from "@/hooks/useQuickActions";
 
 export default function GroupClient({ userId, userName }: { userId: string; userName: string }) {
-  const { group, role, memberLocations, leaveGroup, setGroupData } = useRide();
+  const { group, role, memberLocations, leaveGroup, setGroupData, voiceChat } = useRide();
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
+
+  const { sendAction, sending } = useQuickActions(group?.id || "");
 
   // Vue quand l'utilisateur n'est dans aucun groupe
   if (!group) {
@@ -76,13 +79,21 @@ export default function GroupClient({ userId, userName }: { userId: string; user
       {/* Boutons d'actions rapides */}
       <section>
         <h3 className="text-xs font-bold mb-3 uppercase tracking-wider ml-1" style={{ color: "var(--color-text-muted)" }}>Signaux (Toast)</h3>
-        <QuickActionBar groupId={group.id} userName={userName} />
+        <QuickActionBar onAction={sendAction} sending={sending} />
       </section>
 
       {/* Interface Vocale (P2P WebRTC) */}
       <section className="flex-1 min-h-[200px]">
         <h3 className="text-xs font-bold mb-3 uppercase tracking-wider ml-1" style={{ color: "var(--color-text-muted)" }}>Radio Vocale</h3>
-        <VoiceChatPanel userId={userId} userName={userName} groupId={group.id} />
+        <VoiceChatPanel 
+          isJoined={voiceChat.isJoined}
+          isMuted={voiceChat.isMuted}
+          error={voiceChat.error}
+          memberCount={Object.keys(voiceChat.peers).length + 1}
+          onJoin={voiceChat.joinVoiceChat}
+          onLeave={voiceChat.leaveVoiceChat}
+          onToggleMute={voiceChat.toggleMute}
+        />
       </section>
 
       {/* Bouton pour quitter/détruire */}
