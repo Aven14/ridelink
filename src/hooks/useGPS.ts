@@ -54,16 +54,29 @@ export function useGPS({ groupId, enabled, intervalMs = 3000 }: GPSOptions) {
   );
 
   useEffect(() => {
-    if (!enabled || !groupId) return;
-
-    if (!navigator.geolocation) {
-      console.warn("Géolocalisation non supportée.");
+    if (!enabled) {
+      console.log("[GPS] Disabled");
       return;
     }
 
+    if (!navigator.geolocation) {
+      console.warn("[GPS] Géolocalisation non supportée.");
+      return;
+    }
+
+    console.log("[GPS] Starting watch, groupId:", groupId);
+
     watchIdRef.current = navigator.geolocation.watchPosition(
-      sendLocation,
-      (err) => console.warn("GPS error:", err.message),
+      (position) => {
+        console.log("[GPS] Position received:", {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          speed: position.coords.speed,
+          heading: position.coords.heading,
+        });
+        sendLocation(position);
+      },
+      (err) => console.warn("[GPS] Error:", err.message),
       {
         enableHighAccuracy: true,
         maximumAge: intervalMs,
@@ -73,6 +86,7 @@ export function useGPS({ groupId, enabled, intervalMs = 3000 }: GPSOptions) {
 
     return () => {
       if (watchIdRef.current !== null) {
+        console.log("[GPS] Stopping watch");
         navigator.geolocation.clearWatch(watchIdRef.current);
         watchIdRef.current = null;
       }

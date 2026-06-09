@@ -141,9 +141,12 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+            map.setView([pos.coords.latitude, pos.coords.longitude], 16);
           },
-          () => {}
+          (err) => {
+            console.warn("Erreur GPS initiale:", err.message);
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
         );
       }
 
@@ -203,11 +206,6 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
             .addTo(map);
           markersRef.current.set(member.userId, marker);
         }
-
-        // Auto-centrer sur soi-même
-        if (isSelf) {
-          map.panTo([member.location.lat, member.location.lng], { animate: true });
-        }
       });
 
       // Supprimer les marqueurs des membres partis
@@ -217,6 +215,21 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
           markersRef.current.delete(id);
         }
       });
+    });
+  }, [members, currentUserId]);
+
+  // Suivre la position de l'utilisateur en temps réel
+  useEffect(() => {
+    if (!leafletMapRef.current) return;
+
+    getLeaflet().then((leaflet) => {
+      const map = leafletMapRef.current;
+      if (!map) return;
+
+      const selfMember = members.find((m) => m.userId === currentUserId);
+      if (selfMember) {
+        map.panTo([selfMember.location.lat, selfMember.location.lng], { animate: true });
+      }
     });
   }, [members, currentUserId]);
 
