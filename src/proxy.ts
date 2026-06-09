@@ -7,15 +7,15 @@ export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!session;
 
-  const protectedPrefixes = ["/dashboard", "/ride"];
+  const protectedPrefixes = ["/map", "/group", "/profile"];
   const isProtected = protectedPrefixes.some((p) => pathname.startsWith(p));
 
   if (isProtected && !isLoggedIn) {
     return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  if (isLoggedIn && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+  if (isLoggedIn && (pathname === "/login" || pathname === "/register" || pathname === "/dashboard" || pathname === "/")) {
+    return NextResponse.redirect(new URL("/map", req.url));
   }
 
   return NextResponse.next();

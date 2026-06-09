@@ -10,6 +10,12 @@ async function getLeaflet() {
   if (!L) {
     L = await import("leaflet");
     await import("leaflet/dist/leaflet.css");
+    if (typeof window !== "undefined") {
+      // Leaflet Routing Machine s'attache à L (global)
+      (window as any).L = L;
+      require("leaflet-routing-machine");
+      require("leaflet-routing-machine/dist/leaflet-routing-machine.css");
+    }
   }
   return L;
 }
@@ -140,6 +146,29 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
           () => {}
         );
       }
+
+      // Ajout de l'itinéraire au clic sur la carte
+      let routingControl: any = null;
+      map.on('click', (e) => {
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition((pos) => {
+          if (routingControl) map.removeControl(routingControl);
+          
+          routingControl = (leaflet as any).Routing.control({
+            waypoints: [
+              leaflet.latLng(pos.coords.latitude, pos.coords.longitude),
+              leaflet.latLng(e.latlng.lat, e.latlng.lng)
+            ],
+            routeWhileDragging: true,
+            show: false, // Cache le panneau d'instructions texte pour garder l'UI clean
+            addWaypoints: false,
+            lineOptions: {
+              styles: [{ color: '#f97316', opacity: 0.8, weight: 6 }]
+            },
+            createMarker: () => null, // Ne crée pas de marqueurs moches aux extrémités
+          }).addTo(map);
+        });
+      });
     });
 
     return () => {
