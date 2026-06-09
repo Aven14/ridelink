@@ -127,15 +127,21 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
         attributionControl: true,
       });
 
-      leaflet.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap",
-        maxZoom: 19,
+      leaflet.tileLayer('https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=rp8QKM2YZAe2NlwKwghXQ4vbitONnLv348BE4ei5NQ3jizdK1w0oqtNfUuqigoTt', {
+        attribution: '<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        minZoom: 0,
+        maxZoom: 22,
       }).addTo(map);
 
       // Contrôles de zoom en bas à droite
       leaflet.control.zoom({ position: "bottomright" }).addTo(map);
 
       leafletMapRef.current = map;
+
+      // Forcer le redimensionnement après un court délai
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
 
       // Centrer sur la position GPS de l'utilisateur
       if (navigator.geolocation) {
@@ -233,12 +239,43 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
     });
   }, [members, currentUserId]);
 
+  // Fonction pour recentrer sur l'utilisateur
+  const recenterOnSelf = () => {
+    if (!leafletMapRef.current) return;
+
+    getLeaflet().then((leaflet) => {
+      const map = leafletMapRef.current;
+      if (!map) return;
+
+      const selfMember = members.find((m) => m.userId === currentUserId);
+      if (selfMember) {
+        map.setView([selfMember.location.lat, selfMember.location.lng], 16, { animate: true });
+      } else if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            map.setView([pos.coords.latitude, pos.coords.longitude], 16, { animate: true });
+          },
+          () => {}
+        );
+      }
+    });
+  };
+
   return (
-    <div
-      ref={mapRef}
-      id="RideWayv-map"
-      className="w-full h-full"
-      style={{ background: "#1a1a2e" }}
-    />
+    <div className="relative w-full h-full">
+      <div
+        ref={mapRef}
+        id="RideWayv-map"
+        className="w-full h-full"
+        style={{ background: "#1a1a2e" }}
+      />
+      <button
+        onClick={recenterOnSelf}
+        className="absolute bottom-20 right-4 z-[2000] w-12 h-12 rounded-2xl flex items-center justify-center text-xl glass transition-all active:scale-95"
+        style={{ border: "1px solid rgba(255,255,255,0.1)" }}
+      >
+        🎯
+      </button>
+    </div>
   );
 }
