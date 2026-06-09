@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 export default async function LandingPage() {
   const session = await auth();
-  if (session) redirect("/map");
+  if (session) redirect("/dashboard");
 
   return (
     <main className="min-h-dvh flex flex-col" style={{ background: "var(--color-surface-900)" }}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { MapMember } from "@/types";
 
 // Import dynamique côté client seulement
@@ -111,7 +111,7 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
   const leafletMapRef = useRef<import("leaflet").Map | null>(null);
   const markersRef = useRef<Map<string, import("leaflet").Marker>>(new Map());
   const initializedRef = useRef(false);
-  const followModeRef = useRef(true); // Style Waze: suivre par défaut
+  const [followMode, setFollowMode] = useState(true); // Style Waze: suivre par défaut
 
   // Initialiser la carte
   useEffect(() => {
@@ -125,7 +125,7 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
         center: [48.8566, 2.3522],
         zoom: 16,
         minZoom: 12,
-        maxZoom: 22,
+        maxZoom: 25,
         zoomControl: false,
         attributionControl: true,
       });
@@ -142,7 +142,7 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
 
       // Désactiver le suivi quand l'utilisateur manipule la carte (style Waze)
       map.on('movestart', () => {
-        followModeRef.current = false;
+        setFollowMode(false);
       });
 
       // Forcer le redimensionnement après un court délai
@@ -233,7 +233,7 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
 
   // Suivre la position de l'utilisateur en temps réel (style Waze)
   useEffect(() => {
-    if (!leafletMapRef.current || !followModeRef.current) return;
+    if (!leafletMapRef.current || !followMode) return;
 
     getLeaflet().then((leaflet) => {
       const map = leafletMapRef.current;
@@ -241,10 +241,27 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
 
       const selfMember = members.find((m) => m.userId === currentUserId);
       if (selfMember) {
+        const speed = selfMember.location.speed || 0;
+
+        // Style Waze: zoom dynamique basé sur la vitesse
+        // 0-30 km/h: zoom 18 (proche)
+        // 30-60 km/h: zoom 16 (moyen)
+        // 60-100 km/h: zoom 14 (éloigné)
+        // 100+ km/h: zoom 12 (très éloigné)
+        let targetZoom = 18;
+        if (speed > 100) targetZoom = 12;
+        else if (speed > 60) targetZoom = 14;
+        else if (speed > 30) targetZoom = 16;
+
+        const currentZoom = map.getZoom();
+        if (Math.abs(currentZoom - targetZoom) > 0.5) {
+          map.setZoom(targetZoom, { animate: true });
+        }
+
         map.panTo([selfMember.location.lat, selfMember.location.lng], { animate: true });
       }
     });
-  }, [members, currentUserId]);
+  }, [members, currentUserId, followMode]);
 
   // Fonction pour recentrer sur l'utilisateur
   const recenterOnSelf = () => {
@@ -257,7 +274,7 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
       const selfMember = members.find((m) => m.userId === currentUserId);
       if (selfMember) {
         map.setView([selfMember.location.lat, selfMember.location.lng], 18, { animate: true });
-        followModeRef.current = true; // Réactiver le suivi
+        setFollowMode(true); // Réactiver le suivi
       } else if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
@@ -271,7 +288,7 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
 
   // Fonction pour toggle le mode de suivi (style Waze)
   const toggleFollowMode = () => {
-    followModeRef.current = !followModeRef.current;
+    setFollowMode(!followMode);
   };
 
   return (
@@ -294,7 +311,7 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
         className="absolute bottom-20 right-20 z-[2000] w-12 h-12 rounded-2xl flex items-center justify-center text-xl glass transition-all active:scale-95"
         style={{ border: "1px solid rgba(255,255,255,0.1)" }}
       >
-        {followModeRef.current ? "🔒" : "🔓"}
+        {followMode ? "🔒" : "🔓"}
       </button>
     </div>
   );
