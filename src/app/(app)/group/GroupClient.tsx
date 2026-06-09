@@ -89,9 +89,9 @@ export default function GroupClient({ userId, userName }: { userId: string; user
           isJoined={voiceChat.isJoined}
           isMuted={voiceChat.isMuted}
           error={voiceChat.error}
-          memberCount={Object.keys(voiceChat.peers).length + 1}
-          onJoin={voiceChat.joinVoiceChat}
-          onLeave={voiceChat.leaveVoiceChat}
+          memberCount={totalMembers}
+          onJoin={voiceChat.joinVoice}
+          onLeave={voiceChat.leaveVoice}
           onToggleMute={voiceChat.toggleMute}
         />
       </section>

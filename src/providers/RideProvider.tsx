@@ -71,7 +71,8 @@ export function RideProvider({
   // Écoute de l'événement Pusher pour destruction du groupe (si le leader quitte)
   useEffect(() => {
     if (!group) return;
-    const { pusherClient } = require("@/lib/pusher-client");
+    const { getPusherClient } = require("@/lib/pusher");
+    const pusherClient = getPusherClient();
     const channelName = `presence-ride-${group.id}`;
     const channel = pusherClient.channel(channelName) || pusherClient.subscribe(channelName);
     
