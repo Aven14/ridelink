@@ -194,7 +194,7 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
   return (
     <div
       ref={mapRef}
-      id="ridelink-map"
+      id="RideWayv-map"
       className="w-full h-full"
       style={{ background: "#1a1a2e" }}
     />

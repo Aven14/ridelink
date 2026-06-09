@@ -1,4 +1,4 @@
-# RideLink – Guide de configuration
+# RideWayv – Guide de configuration
 
 ## Prérequis
 

@@ -32,7 +32,7 @@ export default async function LandingPage() {
             style={{ fontFamily: "var(--font-sans)" }}
           >
             <span className="text-gradient">Ride</span>
-            <span style={{ color: "var(--color-text-primary)" }}>Link</span>
+            <span style={{ color: "var(--color-text-primary)" }}>Wayv</span>
           </h1>
           <p
             className="mt-3 text-lg font-medium"
@@ -96,7 +96,7 @@ export default async function LandingPage() {
         className="text-center py-4 text-xs"
         style={{ color: "var(--color-text-muted)" }}
       >
-        RideLink © 2025 · GPS gratuit · Données chiffrées
+        RideWayv © 2025 · GPS gratuit · Données chiffrées
       </footer>
     </main>
   );

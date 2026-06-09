@@ -9,13 +9,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "RideLink – Groupe moto en temps réel",
-  description: "Partagez votre position GPS, communiquez et roulez ensemble avec RideLink.",
+  title: "RideWayv – Groupe moto en temps réel",
+  description: "Partagez votre position GPS, communiquez et roulez ensemble avec RideWayv.",
   keywords: ["moto", "groupe", "GPS", "temps réel", "ride", "traceur"],
-  authors: [{ name: "RideLink" }],
+  authors: [{ name: "RideWayv" }],
   robots: "index, follow",
   openGraph: {
-    title: "RideLink – Groupe moto en temps réel",
+    title: "RideWayv – Groupe moto en temps réel",
     description: "La plateforme de groupe pour motards. GPS live, chat vocal, actions rapides.",
     type: "website",
   },

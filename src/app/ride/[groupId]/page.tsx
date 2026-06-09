@@ -13,7 +13,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { groupId } = await params;
   const [group] = await db.select().from(groups).where(eq(groups.id, groupId)).limit(1);
-  return { title: group ? `${group.name} – RideLink` : "RideLink" };
+  return { title: group ? `${group.name} – RideWayv` : "RideWayv" };
 }
 
 export default async function RidePage({ params }: Props) {

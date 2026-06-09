@@ -65,7 +65,7 @@ export default function RegisterPage() {
             <span className="text-3xl">🏍️</span>
             <span className="text-2xl font-black">
               <span className="text-gradient">Ride</span>
-              <span style={{ color: "var(--color-text-primary)" }}>Link</span>
+              <span style={{ color: "var(--color-text-primary)" }}>Wayv</span>
             </span>
           </Link>
           <p className="mt-2 text-sm" style={{ color: "var(--color-text-muted)" }}>

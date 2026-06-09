@@ -1,4 +1,4 @@
-// Types de l'application RideLink
+// Types de l'application RideWayv
 
 export type UserRole = "leader" | "member";
 

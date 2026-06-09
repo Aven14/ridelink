@@ -39,7 +39,7 @@ export const verificationTokens = pgTable("verification_tokens", {
   expires: timestamp("expires", { mode: "date" }).notNull(),
 }, (t) => [primaryKey({ columns: [t.identifier, t.token] })]);
 
-// ─── RideLink Tables ──────────────────────────────────────────────────────────
+// ─── RideWayv Tables ──────────────────────────────────────────────────────────
 
 export const groups = pgTable("groups", {
   id: uuid("id").primaryKey().defaultRandom(),

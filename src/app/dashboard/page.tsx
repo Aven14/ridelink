@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import DashboardClient from "./DashboardClient";
 
 export const metadata: Metadata = {
-  title: "Dashboard – RideLink",
+  title: "Dashboard – RideWayv",
   description: "Gérez vos groupes de ride",
 };
 
