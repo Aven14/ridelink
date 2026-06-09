@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .limit(1);
 
   const initialGroup = memberData[0]?.group || null;
-  const initialRole = memberData[0]?.role || null;
+  const initialRole = (memberData[0]?.role as "leader" | "member" | null) || null;
 
   return (
     <RideProvider 
