@@ -27,15 +27,9 @@ export default function MapClient({ userId, userName }: { userId: string; userNa
     }
 
     // Les autres
-    Object.entries(memberLocations).forEach(([id, loc]) => {
-      if (id !== userId) {
-        list.push({
-          userId: id,
-          userName: "Rider", // À améliorer si on passe le nom dans Pusher
-          role: group?.createdBy === id ? "leader" : "member",
-          location: loc,
-          isOnline: true,
-        });
+    memberLocations.forEach((member) => {
+      if (member.userId !== userId) {
+        list.push(member);
       }
     });
 
