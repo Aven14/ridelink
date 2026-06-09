@@ -5,13 +5,13 @@ import { useGPS } from "@/hooks/useGPS";
 import { useGroupLocations } from "@/hooks/useGroupLocations";
 import { useVoiceChat } from "@/hooks/useVoiceChat";
 import { useConnectionState } from "@/hooks/useConnectionState";
-import type { Group, UserRole, LocationUpdate } from "@/types";
+import type { Group, UserRole, LocationUpdate, MapMember } from "@/types";
 
 interface RideContextValue {
   group: Group | null;
   role: UserRole | null;
   myLocation: LocationUpdate | null;
-  memberLocations: Record<string, LocationUpdate>;
+  memberLocations: MapMember[];
   voiceChat: ReturnType<typeof useVoiceChat>;
   connectionState: ReturnType<typeof useConnectionState>;
   setGroupData: (group: Group | null, role: UserRole | null) => void;
@@ -36,17 +36,17 @@ export function RideProvider({
   const [group, setGroup] = useState<Group | null>(initialGroup);
   const [role, setRole] = useState<UserRole | null>(initialRole);
 
-  const { location: myLocation } = useGPS(3000);
-  const { locations: memberLocations, sendLocation } = useGroupLocations(group?.id, userId);
-  const voiceChat = useVoiceChat(group?.id, userId, userName);
-  const connectionState = useConnectionState(group?.id);
+  const { location: myLocation } = useGPS({ groupId: group?.id || "", enabled: !!group, intervalMs: 3000 });
+  const { mapMembers } = useGroupLocations({ groupId: group?.id || "", currentUserId: userId, members: [] });
+  const voiceChat = useVoiceChat({ groupId: group?.id || "", userId, memberIds: [] });
+  const connectionState = useConnectionState();
 
   // Synchronisation GPS vers Pusher si dans un groupe
   useEffect(() => {
     if (group && myLocation) {
-      sendLocation(myLocation);
+      // La location est déjà envoyée automatiquement par useGPS
     }
-  }, [group?.id, myLocation, sendLocation]);
+  }, [group?.id, myLocation]);
 
   const setGroupData = (newGroup: Group | null, newRole: UserRole | null) => {
     setGroup(newGroup);
@@ -62,7 +62,7 @@ export function RideProvider({
         await fetch(`/api/groups/${group.id}/leave`, { method: "POST" });
       }
       setGroupData(null, null);
-      if (voiceChat.isJoined) voiceChat.leaveVoiceChat();
+      if (voiceChat.isJoined) voiceChat.leaveVoice();
     } catch (err) {
       console.error("Erreur en quittant le groupe", err);
     }
@@ -78,7 +78,7 @@ export function RideProvider({
     
     const handleGroupDeleted = () => {
       setGroupData(null, null);
-      if (voiceChat.isJoined) voiceChat.leaveVoiceChat();
+      if (voiceChat.isJoined) voiceChat.leaveVoice();
       alert("Le leader a terminé le ride. Le groupe a été supprimé.");
     };
 
@@ -105,7 +105,7 @@ export function RideProvider({
         group,
         role,
         myLocation,
-        memberLocations,
+        memberLocations: mapMembers,
         voiceChat,
         connectionState,
         setGroupData,

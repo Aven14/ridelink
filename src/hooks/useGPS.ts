@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
+import type { LocationUpdate } from "@/types";
 
 interface GPSOptions {
   groupId: string;
@@ -11,6 +12,7 @@ interface GPSOptions {
 export function useGPS({ groupId, enabled, intervalMs = 3000 }: GPSOptions) {
   const watchIdRef = useRef<number | null>(null);
   const lastSentRef = useRef<number>(0);
+  const [location, setLocation] = useState<LocationUpdate | null>(null);
 
   const sendLocation = useCallback(
     async (position: GeolocationPosition) => {
@@ -18,20 +20,26 @@ export function useGPS({ groupId, enabled, intervalMs = 3000 }: GPSOptions) {
       if (now - lastSentRef.current < intervalMs - 500) return; // throttle
       lastSentRef.current = now;
 
+      const locationData: LocationUpdate = {
+        userId: "", // Will be set by caller
+        groupId,
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+        speed: position.coords.speed
+          ? Math.round(position.coords.speed * 3.6) // m/s → km/h
+          : undefined,
+        heading: position.coords.heading ?? undefined,
+        accuracy: position.coords.accuracy,
+        timestamp: new Date().toISOString(),
+      };
+
+      setLocation(locationData);
+
       try {
         await fetch("/api/location", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            groupId,
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            speed: position.coords.speed
-              ? Math.round(position.coords.speed * 3.6) // m/s → km/h
-              : undefined,
-            heading: position.coords.heading ?? undefined,
-            accuracy: position.coords.accuracy,
-          }),
+          body: JSON.stringify(locationData),
         });
       } catch (err) {
         console.warn("Erreur envoi GPS:", err);
@@ -65,4 +73,6 @@ export function useGPS({ groupId, enabled, intervalMs = 3000 }: GPSOptions) {
       }
     };
   }, [enabled, groupId, sendLocation, intervalMs]);
+
+  return { location };
 }
