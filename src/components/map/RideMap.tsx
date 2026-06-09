@@ -125,18 +125,16 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
         center: [48.8566, 2.3522],
         zoom: 16,
         minZoom: 12,
-        maxZoom: 25,
+        maxZoom: 50,
         zoomControl: false,
         attributionControl: true,
       });
 
       leaflet.tileLayer('https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=rp8QKM2YZAe2NlwKwghXQ4vbitONnLv348BE4ei5NQ3jizdK1w0oqtNfUuqigoTt', {
-        minZoom: 0,
-        maxZoom: 22,
+        minZoom: 5,
+        maxZoom: 50,
       }).addTo(map);
 
-      // Contrôles de zoom en bas à droite
-      leaflet.control.zoom({ position: "bottomright" }).addTo(map);
 
       leafletMapRef.current = map;
 
