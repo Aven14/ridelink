@@ -16,10 +16,6 @@ export function useGPS({ groupId, enabled, intervalMs = 3000 }: GPSOptions) {
 
   const sendLocation = useCallback(
     async (position: GeolocationPosition) => {
-      const now = Date.now();
-      if (now - lastSentRef.current < intervalMs - 500) return; // throttle
-      lastSentRef.current = now;
-
       const locationData: LocationUpdate = {
         userId: "", // Will be set by caller
         groupId,
@@ -33,7 +29,16 @@ export function useGPS({ groupId, enabled, intervalMs = 3000 }: GPSOptions) {
         timestamp: new Date().toISOString(),
       };
 
+      // Mettre à jour la location locale immédiatement
       setLocation(locationData);
+
+      // Envoyer à l'API seulement si dans un groupe
+      if (!groupId) return;
+
+      // Envoyer à l'API avec throttle
+      const now = Date.now();
+      if (now - lastSentRef.current < intervalMs - 500) return; // throttle
+      lastSentRef.current = now;
 
       try {
         await fetch("/api/location", {

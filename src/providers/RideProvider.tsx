@@ -36,7 +36,7 @@ export function RideProvider({
   const [group, setGroup] = useState<Group | null>(initialGroup);
   const [role, setRole] = useState<UserRole | null>(initialRole);
 
-  const { location: myLocation } = useGPS({ groupId: group?.id || "", enabled: !!group, intervalMs: 3000 });
+  const { location: myLocation } = useGPS({ groupId: group?.id || "", enabled: true, intervalMs: 3000 });
   const { mapMembers } = useGroupLocations({ groupId: group?.id || "", currentUserId: userId, members: [] });
   const voiceChat = useVoiceChat({ groupId: group?.id || "", userId, memberIds: [] });
   const connectionState = useConnectionState();
