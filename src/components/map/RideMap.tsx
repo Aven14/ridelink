@@ -111,6 +111,7 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
   const leafletMapRef = useRef<import("leaflet").Map | null>(null);
   const markersRef = useRef<Map<string, import("leaflet").Marker>>(new Map());
   const initializedRef = useRef(false);
+  const followModeRef = useRef(true); // Style Waze: suivre par défaut
 
   // Initialiser la carte
   useEffect(() => {
@@ -122,13 +123,14 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
 
       const map = leaflet.map(mapRef.current, {
         center: [48.8566, 2.3522],
-        zoom: 13,
+        zoom: 16,
+        minZoom: 12,
+        maxZoom: 22,
         zoomControl: false,
         attributionControl: true,
       });
 
       leaflet.tileLayer('https://tile.jawg.io/jawg-dark/{z}/{x}/{y}{r}.png?access-token=rp8QKM2YZAe2NlwKwghXQ4vbitONnLv348BE4ei5NQ3jizdK1w0oqtNfUuqigoTt', {
-        attribution: '<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         minZoom: 0,
         maxZoom: 22,
       }).addTo(map);
@@ -137,6 +139,11 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
       leaflet.control.zoom({ position: "bottomright" }).addTo(map);
 
       leafletMapRef.current = map;
+
+      // Désactiver le suivi quand l'utilisateur manipule la carte (style Waze)
+      map.on('movestart', () => {
+        followModeRef.current = false;
+      });
 
       // Forcer le redimensionnement après un court délai
       setTimeout(() => {
@@ -224,9 +231,9 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
     });
   }, [members, currentUserId]);
 
-  // Suivre la position de l'utilisateur en temps réel
+  // Suivre la position de l'utilisateur en temps réel (style Waze)
   useEffect(() => {
-    if (!leafletMapRef.current) return;
+    if (!leafletMapRef.current || !followModeRef.current) return;
 
     getLeaflet().then((leaflet) => {
       const map = leafletMapRef.current;
@@ -249,16 +256,22 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
 
       const selfMember = members.find((m) => m.userId === currentUserId);
       if (selfMember) {
-        map.setView([selfMember.location.lat, selfMember.location.lng], 16, { animate: true });
+        map.setView([selfMember.location.lat, selfMember.location.lng], 18, { animate: true });
+        followModeRef.current = true; // Réactiver le suivi
       } else if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            map.setView([pos.coords.latitude, pos.coords.longitude], 16, { animate: true });
+            map.setView([pos.coords.latitude, pos.coords.longitude], 18, { animate: true });
           },
           () => {}
         );
       }
     });
+  };
+
+  // Fonction pour toggle le mode de suivi (style Waze)
+  const toggleFollowMode = () => {
+    followModeRef.current = !followModeRef.current;
   };
 
   return (
@@ -275,6 +288,13 @@ export default function RideMap({ members, currentUserId }: RideMapProps) {
         style={{ border: "1px solid rgba(255,255,255,0.1)" }}
       >
         🎯
+      </button>
+      <button
+        onClick={toggleFollowMode}
+        className="absolute bottom-20 right-20 z-[2000] w-12 h-12 rounded-2xl flex items-center justify-center text-xl glass transition-all active:scale-95"
+        style={{ border: "1px solid rgba(255,255,255,0.1)" }}
+      >
+        {followModeRef.current ? "🔒" : "🔓"}
       </button>
     </div>
   );
